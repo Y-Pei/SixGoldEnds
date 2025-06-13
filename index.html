@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simple Math Game</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        margin-top: 50px;
+      }
+      .numbers {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      input {
+        font-size: 18px;
+        padding: 5px;
+      }
+      button {
+        font-size: 18px;
+        margin-left: 10px;
+        padding: 5px 10px;
+      }
+      #feedback {
+        margin-top: 20px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Sum the Numbers</h1>
+    <div class="numbers" id="numbers"></div>
+
+    <input type="number" id="userInput" placeholder="Enter sum here" />
+    <button onclick="checkAnswer()">Submit</button>
+    <button onclick="generateNumbers()">New Numbers</button>
+
+    <div id="feedback"></div>
+
+    <script>
+      let currentNumbers = [];
+
+      function generateNumbers() {
+        currentNumbers = Array.from({ length: 6 }, () =>
+          Math.floor(Math.random() * 11)
+        );
+        document.getElementById("numbers").textContent =
+          currentNumbers.join(" + ");
+        document.getElementById("feedback").textContent = "";
+        document.getElementById("userInput").value = "";
+      }
+
+      function checkAnswer() {
+        const userSum = parseInt(
+          document.getElementById("userInput").value,
+          10
+        );
+        const correctSum = currentNumbers.reduce((a, b) => a + b, 0);
+
+        const feedback = document.getElementById("feedback");
+        if (userSum === correctSum) {
+          feedback.textContent = "✅ Correct!";
+          feedback.style.color = "green";
+        } else {
+          feedback.textContent = `❌ Wrong! Correct answer is ${correctSum}`;
+          feedback.style.color = "red";
+        }
+      }
+
+      // Generate numbers when the page loads
+      generateNumbers();
+    </script>
+  </body>
+</html>
