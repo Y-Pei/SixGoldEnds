@@ -2,20 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Simple Math Game</title>
+    <title>Math Game with Modes</title>
     <style>
       body {
         font-family: sans-serif;
         text-align: center;
         margin-top: 50px;
+        background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
+        background-color: #f0f4f8;
+        background-repeat: repeat;
+        min-height: 100vh;
       }
       .numbers {
-        font-size: 24px;
-        margin-bottom: 20px;
+        font-size: 40px;
+        margin-bottom: 40px;
       }
-      input {
+      input,
+      label {
         font-size: 18px;
-        padding: 5px;
+        padding: 10px;
       }
       button {
         font-size: 18px;
@@ -23,30 +28,106 @@
         padding: 5px 10px;
       }
       #feedback {
-        margin-top: 20px;
+        margin-top: 30px;
         font-weight: bold;
+      }
+      .controls {
+        margin-bottom: 20px;
+      }
+      .controls label {
+        display: block;
+        margin: 5px;
       }
     </style>
   </head>
+  <p style="margin-top: 40px; font-size: 14px; color: gray">
+    Author: @Y-Pei and the chat bot
+  </p>
+
   <body>
-    <h1>Sum the Numbers</h1>
+    <h1>ok I've scored...</h1>
+
+    <div class="controls">
+      <label>
+        <input type="checkbox" id="oddModeToggle" />
+        Imperial
+      </label>
+      <label>
+        <input type="checkbox" id="gt5Toggle" />
+        Nice weather!
+      </label>
+    </div>
+
     <div class="numbers" id="numbers"></div>
 
-    <input type="number" id="userInput" placeholder="Enter sum here" />
-    <button onclick="checkAnswer()">Submit</button>
-    <button onclick="generateNumbers()">New Numbers</button>
+    <input type="number" id="userInput" placeholder="End total: " />
+    <button onclick="checkAnswer()">Score</button>
+    <button onclick="generateNumbers()">Next End!</button>
 
     <div id="feedback"></div>
 
+    <div id="scoreBoard" style="margin-top: 20px; font-size: 18px">
+      ✅ Correct: <span id="correctCount">0</span> | ❌ Wrong:
+      <span id="wrongCount">0</span>
+    </div>
+
     <script>
       let currentNumbers = [];
+      let correctCount = 0;
+      let wrongCount = 0;
 
       function generateNumbers() {
-        currentNumbers = Array.from({ length: 6 }, () =>
-          Math.floor(Math.random() * 11)
-        );
-        document.getElementById("numbers").textContent =
-          currentNumbers.join(" + ");
+        const oddMode = document.getElementById("oddModeToggle").checked;
+        const gt5Mode = document.getElementById("gt5Toggle").checked;
+
+        let allowed;
+
+        if (oddMode && gt5Mode) {
+          // Only odd numbers > 5: [7, 9]
+          allowed = [7, 9];
+        } else if (oddMode) {
+          // Only odd numbers + 0
+          allowed = [0, 1, 3, 5, 7, 9];
+        } else if (gt5Mode) {
+          // Only numbers > 5
+          allowed = [6, 7, 8, 9, 10];
+        } else {
+          // Full range 0–10
+          allowed = Array.from({ length: 11 }, (_, i) => i);
+        }
+
+        const values = Array.from({ length: 6 }, () => {
+          const index = Math.floor(Math.random() * allowed.length);
+          return allowed[index];
+        });
+
+        const displayValues = values.map((n) => {
+          if (n === 0) return "M";
+          if (n === 10 && !oddMode && Math.random() < 0.3) return "X";
+          return n.toString();
+        });
+
+        const combined = values.map((value, i) => ({
+          value,
+          label: displayValues[i],
+        }));
+        combined.sort((a, b) => {
+          if (b.value !== a.value) {
+            return b.value - a.value; // regular descending sort
+          } else {
+            // Tie-breaker for same value: show 'X' before '10'
+            if (a.label === "X" && b.label === "10") return -1;
+            if (a.label === "10" && b.label === "X") return 1;
+            return 0;
+          }
+        });
+
+        document.getElementById("numbers").textContent = combined
+          .map((n) => n.label)
+          .join("  ");
+
+        currentNumbers = combined.map((n) => n.value);
+
         document.getElementById("feedback").textContent = "";
         document.getElementById("userInput").value = "";
       }
@@ -62,14 +143,26 @@
         if (userSum === correctSum) {
           feedback.textContent = "✅ Correct!";
           feedback.style.color = "green";
+          correctCount++;
         } else {
           feedback.textContent = `❌ Wrong! Correct answer is ${correctSum}`;
           feedback.style.color = "red";
+          wrongCount++;
         }
+
+        // Update scoreboard
+        document.getElementById("correctCount").textContent = correctCount;
+        document.getElementById("wrongCount").textContent = wrongCount;
       }
 
-      // Generate numbers when the page loads
       generateNumbers();
+
+      document
+        .getElementById("oddModeToggle")
+        .addEventListener("change", generateNumbers);
+      document
+        .getElementById("gt5Toggle")
+        .addEventListener("change", generateNumbers);
     </script>
   </body>
 </html>
